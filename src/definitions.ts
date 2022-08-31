@@ -1,3 +1,8 @@
 export interface AccountManagerPlugin {
-  echo(options: { value: string }): Promise<{ value: string }>;
+  getAccount(): Promise<{}>;
+  addNewAccount(options: { accountType: string, authTokenType: string }): Promise<void>;
+  getExistingAccountAuthToken(options: { account: any, authTokenType: string }): Promise<void>;
+  showAccountPicker(options: { authTokenType: string, invalidate: boolean }): Promise<void>;
+  getTokenForAccountCreateIfNeeded(options: { accountType: string, authTokenType: string }): Promise<void>;
+  invalidateAuthToken(options: { account: any, authTokenType: string }): Promise<void>;
 }

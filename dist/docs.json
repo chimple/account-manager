@@ -1,0 +1,105 @@
+{
+  "api": {
+    "name": "AccountManagerPlugin",
+    "slug": "accountmanagerplugin",
+    "docs": "",
+    "tags": [],
+    "methods": [
+      {
+        "name": "getAccount",
+        "signature": "() => Promise<{}>",
+        "parameters": [],
+        "returns": "Promise<{}>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [],
+        "slug": "getaccount"
+      },
+      {
+        "name": "addNewAccount",
+        "signature": "(options: { accountType: string; authTokenType: string; }) => Promise<void>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "",
+            "type": "{ accountType: string; authTokenType: string; }"
+          }
+        ],
+        "returns": "Promise<void>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [],
+        "slug": "addnewaccount"
+      },
+      {
+        "name": "getExistingAccountAuthToken",
+        "signature": "(options: { account: any; authTokenType: string; }) => Promise<void>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "",
+            "type": "{ account: any; authTokenType: string; }"
+          }
+        ],
+        "returns": "Promise<void>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [],
+        "slug": "getexistingaccountauthtoken"
+      },
+      {
+        "name": "showAccountPicker",
+        "signature": "(options: { authTokenType: string; invalidate: boolean; }) => Promise<void>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "",
+            "type": "{ authTokenType: string; invalidate: boolean; }"
+          }
+        ],
+        "returns": "Promise<void>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [],
+        "slug": "showaccountpicker"
+      },
+      {
+        "name": "getTokenForAccountCreateIfNeeded",
+        "signature": "(options: { accountType: string; authTokenType: string; }) => Promise<void>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "",
+            "type": "{ accountType: string; authTokenType: string; }"
+          }
+        ],
+        "returns": "Promise<void>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [],
+        "slug": "gettokenforaccountcreateifneeded"
+      },
+      {
+        "name": "invalidateAuthToken",
+        "signature": "(options: { account: any; authTokenType: string; }) => Promise<void>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "",
+            "type": "{ account: any; authTokenType: string; }"
+          }
+        ],
+        "returns": "Promise<void>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [],
+        "slug": "invalidateauthtoken"
+      }
+    ],
+    "properties": []
+  },
+  "interfaces": [],
+  "enums": [],
+  "typeAliases": [],
+  "pluginConfigs": []
+}

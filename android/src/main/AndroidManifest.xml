@@ -1,3 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.chimple.accountmanager">
+    xmlns:tools="http://schemas.android.com/tools"
+    package="org.chimple.accountmanager"
+    tools:ignore="CoarseFineLocation">
+    <uses-permission
+        android:name="android.permission.ACCOUNT_MANAGER"
+        tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
 </manifest>
