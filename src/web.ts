@@ -7,18 +7,18 @@ export class AccountManagerWeb extends WebPlugin implements AccountManagerPlugin
     throw new Error('Method not implemented.');
   }
   async getExistingAccountAuthToken(options: { account: any; authTokenType: string; }): Promise<void> {
-    throw new Error('Method not implemented.');
+    throw new Error('Method not implemented.' + options);
   }
   async showAccountPicker(options: { authTokenType: string; invalidate: boolean; }): Promise<void> {
-    throw new Error('Method not implemented.');
+    throw new Error('Method not implemented.'+ options);
   }
   async getTokenForAccountCreateIfNeeded(options: { accountType: string; authTokenType: string; }): Promise<void> {
-    throw new Error('Method not implemented.');
+    throw new Error('Method not implemented.'+ options);
   }
   async invalidateAuthToken(options: { account: any; authTokenType: string; }): Promise<void> {
-    throw new Error('Method not implemented.');
+    throw new Error('Method not implemented.'+ options);
   }
   async addNewAccount(options: { accountType: string; authTokenType: string; }): Promise<void> {
-    throw new Error('Method not implemented.');
+    throw new Error('Method not implemented.'+ options);
   }
 }

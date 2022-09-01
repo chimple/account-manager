@@ -4,24 +4,19 @@ export class AccountManagerWeb extends WebPlugin {
         throw new Error('Method not implemented.');
     }
     async getExistingAccountAuthToken(options) {
-        // throw new Error('Method not implemented.');
-        console.log('getExistingAccountAuthToken', options);
+        throw new Error('Method not implemented.' + options);
     }
     async showAccountPicker(options) {
-        // throw new Error('Method not implemented.');
-        console.log('showAccountPicker', options);
+        throw new Error('Method not implemented.' + options);
     }
     async getTokenForAccountCreateIfNeeded(options) {
-        // throw new Error('Method not implemented.');
-        console.log('getTokenForAccountCreateIfNeeded', options);
+        throw new Error('Method not implemented.' + options);
     }
     async invalidateAuthToken(options) {
-        // throw new Error('Method not implemented.');
-        console.log('invalidateAuthToken', options);
+        throw new Error('Method not implemented.' + options);
     }
     async addNewAccount(options) {
-        console.log('addNewAccount', options);
-        // return options;
+        throw new Error('Method not implemented.' + options);
     }
 }
 //# sourceMappingURL=web.js.map

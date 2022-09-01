@@ -16,6 +16,7 @@ import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -42,6 +43,7 @@ public class AccountManagerPlugin extends Plugin {
     public static final String ACCOUNT_TYPE = "com.google";
     private static final String STATE_DIALOG = "state_dialog";
     private static final String STATE_INVALIDATE = "state_invalidate";
+//    private final Context CONTEXT = getContext();
 
     private String TAG = this.getClass().getSimpleName();
     private AccountManager mAccountManager;
@@ -81,13 +83,15 @@ public class AccountManagerPlugin extends Plugin {
 
     /**
      * Add new account to the account manager
-     *
-     * @param authTokenType
+     * <p>
+     * //     * @param authTokenType
      */
 
     @PluginMethod()
-    public void addNewAccount(String accountType, String authTokenType) {
-        final AccountManagerFuture<Bundle> future = mAccountManager.addAccount(accountType, authTokenType, null, null, null, new AccountManagerCallback<Bundle>() {
+    public void addNewAccount(PluginCall call) {
+//        public void addNewAccount(PluginCall call, String accountType, String authTokenType) {
+        Log.d(TAG, "Entered addNewAccount() ");
+        final AccountManagerFuture<Bundle> future = mAccountManager.addAccount(ACCOUNT_TYPE, "auth_token_type", null, null, getActivity(), new AccountManagerCallback<Bundle>() {
             @Override
             public void run(AccountManagerFuture<Bundle> future) {
                 try {
@@ -122,7 +126,7 @@ public class AccountManagerPlugin extends Plugin {
             System.out.println("getExistingAccountAuthToken() location permission already granted ");
         }
 
-        final AccountManagerFuture<Bundle> future = mAccountManager.getAuthToken(account, authTokenType, null, null, null, null);
+        final AccountManagerFuture<Bundle> future = mAccountManager.getAuthToken(account, authTokenType, null, getActivity(), null, null);
 
         new Thread(() -> {
             try {
@@ -151,31 +155,47 @@ public class AccountManagerPlugin extends Plugin {
 
     /**
      * Show all the accounts registered on the account manager. Request an auth token upon user select.
-     *
-     * @param authTokenType
+     * <p>
+     * //     * @param authTokenType
      */
     @PluginMethod()
-    public void showAccountPicker(final String authTokenType, final boolean invalidate, PluginCall call) {
-        mInvalidate = invalidate;
+    public void showAccountPicker(PluginCall call) {
+//    public void showAccountPicker(PluginCall call, final String authTokenType, final boolean invalidate) {
+
+        //Requesting GET_ACCOUNTS permission
+        if (getPermissionState("GET_ACCOUNTS") != PermissionState.GRANTED) {
+            Log.d("VSO", "Entered showAccountPicker() requesting permission");
+            requestPermissionForAlias("GET_ACCOUNTS", call, "accountManagerPermissionCallback");
+            System.out.println("getAccount() GET_ACCOUNTS permission granted ");
+        } else {
+            System.out.println("getAccount() GET_ACCOUNTS permission already granted ");
+        }
+
+        mInvalidate = false;
         final Account availableAccounts[] = mAccountManager.getAccountsByType(ACCOUNT_TYPE);
+        Log.d(TAG, "Entered showAccountPicker: " + availableAccounts);
 
         if (availableAccounts.length == 0) {
-            Toast.makeText(null, "No accounts", Toast.LENGTH_SHORT).show();
+            System.out.println("if (availableAccounts.length == 0) {");
+            Toast.makeText(getActivity(), "No accounts", Toast.LENGTH_SHORT).show();
         } else {
+            System.out.println("else");
             String name[] = new String[availableAccounts.length];
             for (int i = 0; i < availableAccounts.length; i++) {
+                System.out.println("availableAccounts[i].name " + i + "    " + availableAccounts[i].name);
                 name[i] = availableAccounts[i].name;
             }
 
             // Account picker
-            mAlertDialog = new AlertDialog.Builder(null).setTitle("Pick Account").setAdapter(new ArrayAdapter<String>(null, android.R.layout.simple_list_item_1, name), new DialogInterface.OnClickListener() {
+            mAlertDialog = new AlertDialog.Builder(getActivity()).setTitle("Pick Account").setAdapter(new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, name), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    if (invalidate)
-                        invalidateAuthToken(availableAccounts[which], authTokenType, call);
+//                    if (invalidate)
+                    if (false)
+                        invalidateAuthToken(availableAccounts[which], "auth_token_type", call);
                     else
 //                        getExistingAccountAuthToken(call);
-                        getExistingAccountAuthToken(call, availableAccounts[which], authTokenType);
+                        getExistingAccountAuthToken(call, availableAccounts[which], "auth_token_type");
                 }
             }).create();
             mAlertDialog.show();
