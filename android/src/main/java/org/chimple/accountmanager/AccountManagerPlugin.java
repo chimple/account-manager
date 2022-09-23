@@ -7,6 +7,7 @@ import com.getcapacitor.PermissionState;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
+import com.getcapacitor.annotation.ActivityCallback;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.annotation.Permission;
 import com.getcapacitor.annotation.PermissionCallback;
@@ -15,14 +16,21 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
+import android.accounts.AuthenticatorException;
+import android.accounts.OperationCanceledException;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
+
+import androidx.activity.result.ActivityResult;
+
+import java.io.IOException;
 
 
 @CapacitorPlugin(name = "AccountManager",
@@ -54,8 +62,55 @@ public class AccountManagerPlugin extends Plugin {
 
     @Override
     public void load() {
-        System.out.println("Entered load() in android/java layer");
-        mAccountManager = AccountManager.get(getContext());
+        Log.d("VSO", "Entered load() in android/java layer");
+        mAccountManager = AccountManager.get(getActivity());
+    }
+
+    @PluginMethod()
+    public Account accountPicker(PluginCall call) {
+        Intent intent = mAccountManager.newChooseAccountIntent(null, null,
+                null, false, null, null, null, null);
+        Log.d(TAG, "getAccount: intent" + intent + "  " + intent.getDataString());
+//        startActivityForResult(call, intent, "getAccountIntentResult");
+        startActivityForResult(call, intent, "authenticateAccountIntentResult");
+        return null;
+    }
+
+    @ActivityCallback
+    private void getAccountIntentResult(PluginCall call, ActivityResult result) {
+        if (call == null) {
+            return;
+        }
+
+        // Do something with the result data
+        Log.d(TAG, "getAccountIntentResult: " + result + "   " + result.getData());
+
+        Intent resultData = result.getData();
+        Log.d(TAG, "getAccountIntentResult: resultData " + resultData.getExtras().toString());
+
+        Bundle extras = resultData.getExtras();
+        Log.d(TAG, "getAccountIntentResult: Bundle extras " + extras.getString("authAccount") + "   " + extras.getString("accountType"));
+//
+//        Log.d(TAG, "intent.getStringExtra(\"name\")" + result.getData().getStringExtra("id"));
+//        Log.d(TAG, "intent.getStringExtra(\"name\")" + result.getData().getStringExtra("name"));
+    }
+
+    @ActivityCallback
+    private void authenticateAccountIntentResult(PluginCall call, ActivityResult result) {
+        if (call == null) {
+            return;
+        }
+
+        // Do something with the result data
+        Log.d(TAG, "getAccountIntentResult: " + result + "   " + result.getData());
+
+        Intent resultData = result.getData();
+        Log.d(TAG, "getAccountIntentResult: resultData " + resultData.getExtras().toString());
+
+        Bundle extras = resultData.getExtras();
+        Log.d(TAG, "getAccountIntentResult: Bundle extras " + extras.getString("authAccount") + "   " + extras.getString("accountType"));
+        Log.d(TAG, "getAccountIntentResult: Authenticator Method Called");
+        authenticator(call, extras.getString("authAccount"), extras.getString("accountType"));
     }
 
     @PluginMethod()
@@ -64,21 +119,38 @@ public class AccountManagerPlugin extends Plugin {
         //Requesting GET_ACCOUNTS permission
         if (getPermissionState("GET_ACCOUNTS") != PermissionState.GRANTED) {
             Log.d("VSO", "Entered getAccount() requesting permission");
-            requestPermissionForAlias("GET_ACCOUNTS", call, "accountManagerPermissionCallback");
+            requestPermissionForAlias("GET_ACCOUNTS", call, "getAccountPermissionCallback");
             System.out.println("getAccount() GET_ACCOUNTS permission granted ");
         } else {
             System.out.println("getAccount() GET_ACCOUNTS permission already granted ");
         }
         Account[] accounts = mAccountManager.getAccounts(); //.getAccountsByType("com.google");
+//        System.out.println("mAccountManager.getAccountsByType(\"com.google\") " + mAccountManager.getAccountsByType("com.google"));
+//        Account[] accounts = mAccountManager.getAccountsByType("com.google");
+        System.out.println("accounts " + accounts.length + "   " + accounts);
         Account account;
+
+        for (int i = 0; i < accounts.length; i++) {
+            System.out.println("account " + accounts[i].name + "   " + accounts[i].type);
+        }
+
         if (accounts.length > 0) {
             account = accounts[0];
         } else {
             account = null;
         }
-
-        System.out.println("getAccount() result" + account);
+        System.out.println("getAccount() account" + account);
         return account;
+    }
+
+    @PermissionCallback
+    public void getAccountPermissionCallback(PluginCall call) {
+        if (getPermissionState("GET_ACCOUNTS") == PermissionState.GRANTED) {
+            System.out.println("accountManagerPermissionCallback() Called GET_ACCOUNTS permission granted");
+            return;
+        } else {
+            call.reject("accountManagerPermissionCallback Permission is rejected");
+        }
     }
 
     /**
@@ -107,15 +179,49 @@ public class AccountManagerPlugin extends Plugin {
         }, null);
     }
 
+    @PluginMethod()
+    public Account authenticator(PluginCall call, String userName, String AccountType) {
+        Log.d(TAG, "authenticator: Method called");
+        try {
+            final AccountManagerFuture<Bundle> future = mAccountManager.confirmCredentials(new Account(userName, AccountType), null, getActivity(), new AccountManagerCallback<Bundle>() {
+                @Override
+                public void run(AccountManagerFuture<Bundle> future) {
+                    try {
+                        Bundle bnd = future.getResult();
+                        showMessage("Account was Authenticated");
+                        Log.d("VSO", "Authenticator Bundle is " + future.isDone());
+                        if (bnd.getBoolean("booleanResult"))
+                            Toast.makeText(getActivity(), "Account Authentication Success", Toast.LENGTH_SHORT).show();
+                        else
+                            Toast.makeText(getActivity(), "Account Authentication Failed", Toast.LENGTH_SHORT).show();
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        showMessage(e.getMessage());
+                    }
+                }
+            }, null);
+            Log.d(TAG, "authenticator: " + future.getResult());
+        } catch (AuthenticatorException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (OperationCanceledException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
     /**
      * Get the auth token for an existing account on the AccountManager
      * <p>
      *
-     * @param account
-     * @param authTokenType
+//     * @param account
+//     * @param authTokenType
      */
     @PluginMethod()
-    public void getExistingAccountAuthToken(PluginCall call, Account account, String authTokenType) {
+    public void getExistingAccountAuthToken(PluginCall call) {
         Log.d("VSO", "Entered getExistingAccountAuthToken()");
         //Requesting ACCOUNT_MANAGER permission
         if (getPermissionState("ACCOUNT_MANAGER") != PermissionState.GRANTED) {
@@ -126,7 +232,7 @@ public class AccountManagerPlugin extends Plugin {
             System.out.println("getExistingAccountAuthToken() location permission already granted ");
         }
 
-        final AccountManagerFuture<Bundle> future = mAccountManager.getAuthToken(account, authTokenType, null, getActivity(), null, null);
+        final AccountManagerFuture<Bundle> future = mAccountManager.getAuthToken(new Account("skandakumar97@gmail.com","com.google"), ACCOUNT_TYPE, null, getActivity(), null, null);
 
         new Thread(() -> {
             try {
@@ -164,8 +270,8 @@ public class AccountManagerPlugin extends Plugin {
 
         //Requesting GET_ACCOUNTS permission
         if (getPermissionState("GET_ACCOUNTS") != PermissionState.GRANTED) {
-            Log.d("VSO", "Entered showAccountPicker() requesting permission");
-            requestPermissionForAlias("GET_ACCOUNTS", call, "accountManagerPermissionCallback");
+            Log.d("VSO", "Entered getAccount() requesting permission");
+            requestPermissionForAlias("GET_ACCOUNTS", call, "getAccountPermissionCallback");
             System.out.println("getAccount() GET_ACCOUNTS permission granted ");
         } else {
             System.out.println("getAccount() GET_ACCOUNTS permission already granted ");
@@ -194,13 +300,33 @@ public class AccountManagerPlugin extends Plugin {
                     if (false)
                         invalidateAuthToken(availableAccounts[which], "auth_token_type", call);
                     else
-//                        getExistingAccountAuthToken(call);
-                        getExistingAccountAuthToken(call, availableAccounts[which], "auth_token_type");
+                        getExistingAccountAuthToken(call);
+//                        getExistingAccountAuthToken(call, availableAccounts[which], "auth_token_type");
                 }
             }).create();
             mAlertDialog.show();
         }
     }
+
+//    public void pickUserAccount() {
+//        /*This will list all available accounts on device without any filtering*/
+//        Intent intent = mAccountManager.newChooseAccountIntent(null, null,
+//                null, false, null, null, null, null);
+//        startActivityForResult(intent, REQUEST_CODE_PICK_ACCOUNT);
+//    }
+//    /*After manually selecting every app related account, I got its Account type using the code below*/
+//    @Override
+//    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        if (requestCode == REQUEST_CODE_PICK_ACCOUNT) {
+//            // Receiving a result from the AccountPicker
+//            if (resultCode == RESULT_OK) {
+//                System.out.println(data.getStringExtra(AccountManager.KEY_ACCOUNT_TYPE));
+//                System.out.println(data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME));
+//            } else if (resultCode == RESULT_CANCELED) {
+//                Toast.makeText(this, R.string.pick_account, Toast.LENGTH_LONG).show();
+//            }
+//        }
+//    }
 
     /**
      * Invalidates the auth token for the account
