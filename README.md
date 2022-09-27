@@ -16,9 +16,11 @@ npx cap sync
 * [`getAccount()`](#getaccount)
 * [`addNewAccount(...)`](#addnewaccount)
 * [`getExistingAccountAuthToken(...)`](#getexistingaccountauthtoken)
-* [`showAccountPicker(...)`](#showaccountpicker)
+* [`showAccountPicker()`](#showaccountpicker)
 * [`getTokenForAccountCreateIfNeeded(...)`](#gettokenforaccountcreateifneeded)
 * [`invalidateAuthToken(...)`](#invalidateauthtoken)
+* [`authenticator(...)`](#authenticator)
+* [`accountPicker()`](#accountpicker)
 
 </docgen-index>
 
@@ -62,15 +64,11 @@ getExistingAccountAuthToken(options: { account: any; authTokenType: string; }) =
 --------------------
 
 
-### showAccountPicker(...)
+### showAccountPicker()
 
 ```typescript
-showAccountPicker(options: { authTokenType: string; invalidate: boolean; }) => Promise<void>
+showAccountPicker() => Promise<void>
 ```
-
-| Param         | Type                                                         |
-| ------------- | ------------------------------------------------------------ |
-| **`options`** | <code>{ authTokenType: string; invalidate: boolean; }</code> |
 
 --------------------
 
@@ -97,6 +95,30 @@ invalidateAuthToken(options: { account: any; authTokenType: string; }) => Promis
 | Param         | Type                                                  |
 | ------------- | ----------------------------------------------------- |
 | **`options`** | <code>{ account: any; authTokenType: string; }</code> |
+
+--------------------
+
+
+### authenticator(...)
+
+```typescript
+authenticator(options: { userName: string; AccountType: string; }) => Promise<void>
+```
+
+| Param         | Type                                                    |
+| ------------- | ------------------------------------------------------- |
+| **`options`** | <code>{ userName: string; AccountType: string; }</code> |
+
+--------------------
+
+
+### accountPicker()
+
+```typescript
+accountPicker() => Promise<{}>
+```
+
+**Returns:** <code>Promise&lt;{}&gt;</code>
 
 --------------------
 

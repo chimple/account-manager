@@ -49,14 +49,8 @@
       },
       {
         "name": "showAccountPicker",
-        "signature": "(options: { authTokenType: string; invalidate: boolean; }) => Promise<void>",
-        "parameters": [
-          {
-            "name": "options",
-            "docs": "",
-            "type": "{ authTokenType: string; invalidate: boolean; }"
-          }
-        ],
+        "signature": "() => Promise<void>",
+        "parameters": [],
         "returns": "Promise<void>",
         "tags": [],
         "docs": "",
@@ -94,6 +88,32 @@
         "docs": "",
         "complexTypes": [],
         "slug": "invalidateauthtoken"
+      },
+      {
+        "name": "authenticator",
+        "signature": "(options: { userName: string; AccountType: string; }) => Promise<void>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "",
+            "type": "{ userName: string; AccountType: string; }"
+          }
+        ],
+        "returns": "Promise<void>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [],
+        "slug": "authenticator"
+      },
+      {
+        "name": "accountPicker",
+        "signature": "() => Promise<{}>",
+        "parameters": [],
+        "returns": "Promise<{}>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [],
+        "slug": "accountpicker"
       }
     ],
     "properties": []

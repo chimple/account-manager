@@ -67,13 +67,19 @@ public class AccountManagerPlugin extends Plugin {
     }
 
     @PluginMethod()
-    public Account accountPicker(PluginCall call) {
-        Intent intent = mAccountManager.newChooseAccountIntent(null, null,
-                null, false, null, null, null, null);
-        Log.d(TAG, "getAccount: intent" + intent + "  " + intent.getDataString());
-//        startActivityForResult(call, intent, "getAccountIntentResult");
-        startActivityForResult(call, intent, "authenticateAccountIntentResult");
-        return null;
+    public void accountPicker(PluginCall call) {
+        try {
+            Intent intent = mAccountManager.newChooseAccountIntent(null, null,
+                    null, false, null, null, null, null);
+            saveCall(call);
+            Log.d(TAG, "getAccount: intent" + intent + "  " + intent.getDataString());
+//          startActivityForResult(call, intent, "getAccountIntentResult");
+            startActivityForResult(call, intent, "authenticateAccountIntentResult");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return;
     }
 
     @ActivityCallback
@@ -97,20 +103,23 @@ public class AccountManagerPlugin extends Plugin {
 
     @ActivityCallback
     private void authenticateAccountIntentResult(PluginCall call, ActivityResult result) {
-        if (call == null) {
+        PluginCall savedCall = getSavedCall();
+
+        if (savedCall == null) {
             return;
         }
 
-        // Do something with the result data
-        Log.d(TAG, "getAccountIntentResult: " + result + "   " + result.getData());
-
         Intent resultData = result.getData();
-        Log.d(TAG, "getAccountIntentResult: resultData " + resultData.getExtras().toString());
-
         Bundle extras = resultData.getExtras();
-        Log.d(TAG, "getAccountIntentResult: Bundle extras " + extras.getString("authAccount") + "   " + extras.getString("accountType"));
-        Log.d(TAG, "getAccountIntentResult: Authenticator Method Called");
-        authenticator(call, extras.getString("authAccount"), extras.getString("accountType"));
+        Log.d(TAG, "authenticateAccountIntentResult: " + extras.getString("accountType") + "  " + extras.getString("authAccount"));
+        String accountType = extras.getString("accountType");
+        if (accountType.equals("com.google")) {
+            authenticator(call, extras.getString("authAccount"), accountType);
+        } else {
+            Toast.makeText(getActivity(), "please choose Google Account to Authenticate", Toast.LENGTH_SHORT).show();
+            call.reject("false");
+        }
+
     }
 
     @PluginMethod()
@@ -180,7 +189,13 @@ public class AccountManagerPlugin extends Plugin {
     }
 
     @PluginMethod()
-    public Account authenticator(PluginCall call, String userName, String AccountType) {
+    public void authenticator(PluginCall call, String userName, String AccountType) {
+        PluginCall savedCall = getSavedCall();
+
+        if (savedCall == null) {
+            return;
+        }
+
         Log.d(TAG, "authenticator: Method called");
         try {
             final AccountManagerFuture<Bundle> future = mAccountManager.confirmCredentials(new Account(userName, AccountType), null, getActivity(), new AccountManagerCallback<Bundle>() {
@@ -188,12 +203,20 @@ public class AccountManagerPlugin extends Plugin {
                 public void run(AccountManagerFuture<Bundle> future) {
                     try {
                         Bundle bnd = future.getResult();
-                        showMessage("Account was Authenticated");
                         Log.d("VSO", "Authenticator Bundle is " + future.isDone());
-                        if (bnd.getBoolean("booleanResult"))
+                        if (bnd.getBoolean("booleanResult")) {
+                            Log.d("VSO", "Account Authentication Success");
                             Toast.makeText(getActivity(), "Account Authentication Success", Toast.LENGTH_SHORT).show();
-                        else
+                            JSObject ret = new JSObject();
+                            ret.put("result", true);
+                            call.success(ret);
+                        } else {
                             Toast.makeText(getActivity(), "Account Authentication Failed", Toast.LENGTH_SHORT).show();
+//                            JSObject ret = new JSObject();
+//                            ret.put("result", false);
+//                            call.success(ret);
+                            call.reject("false");
+                        }
 
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -201,24 +224,18 @@ public class AccountManagerPlugin extends Plugin {
                     }
                 }
             }, null);
-            Log.d(TAG, "authenticator: " + future.getResult());
-        } catch (AuthenticatorException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (OperationCanceledException e) {
+            Log.d(TAG, "authenticator: run method completed ");
+        } catch (Exception e) {
             e.printStackTrace();
         }
-
-        return null;
     }
 
     /**
      * Get the auth token for an existing account on the AccountManager
      * <p>
-     *
-//     * @param account
-//     * @param authTokenType
+     * <p>
+     * //     * @param account
+     * //     * @param authTokenType
      */
     @PluginMethod()
     public void getExistingAccountAuthToken(PluginCall call) {
@@ -232,7 +249,7 @@ public class AccountManagerPlugin extends Plugin {
             System.out.println("getExistingAccountAuthToken() location permission already granted ");
         }
 
-        final AccountManagerFuture<Bundle> future = mAccountManager.getAuthToken(new Account("skandakumar97@gmail.com","com.google"), ACCOUNT_TYPE, null, getActivity(), null, null);
+        final AccountManagerFuture<Bundle> future = mAccountManager.getAuthToken(new Account("skandakumar97@gmail.com", "com.google"), ACCOUNT_TYPE, null, getActivity(), null, null);
 
         new Thread(() -> {
             try {

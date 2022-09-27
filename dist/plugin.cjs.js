@@ -9,14 +9,17 @@ const AccountManager = core.registerPlugin('AccountManager', {
 });
 
 class AccountManagerWeb extends core.WebPlugin {
+    accountPicker() {
+        throw new Error('Method not implemented.');
+    }
     async getAccount() {
         throw new Error('Method not implemented.');
     }
     async getExistingAccountAuthToken(options) {
         throw new Error('Method not implemented.' + options);
     }
-    async showAccountPicker(options) {
-        throw new Error('Method not implemented.' + options);
+    async showAccountPicker() {
+        throw new Error('Method not implemented.');
     }
     async getTokenForAccountCreateIfNeeded(options) {
         throw new Error('Method not implemented.' + options);
@@ -25,6 +28,9 @@ class AccountManagerWeb extends core.WebPlugin {
         throw new Error('Method not implemented.' + options);
     }
     async addNewAccount(options) {
+        throw new Error('Method not implemented.' + options);
+    }
+    async authenticator(options) {
         throw new Error('Method not implemented.' + options);
     }
 }

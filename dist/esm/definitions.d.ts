@@ -8,10 +8,7 @@ export interface AccountManagerPlugin {
         account: any;
         authTokenType: string;
     }): Promise<void>;
-    showAccountPicker(options: {
-        authTokenType: string;
-        invalidate: boolean;
-    }): Promise<void>;
+    showAccountPicker(): Promise<void>;
     getTokenForAccountCreateIfNeeded(options: {
         accountType: string;
         authTokenType: string;
@@ -20,4 +17,9 @@ export interface AccountManagerPlugin {
         account: any;
         authTokenType: string;
     }): Promise<void>;
+    authenticator(options: {
+        userName: string;
+        AccountType: string;
+    }): Promise<void>;
+    accountPicker(): Promise<{}>;
 }
