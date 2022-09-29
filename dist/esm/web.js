@@ -1,9 +1,7 @@
 import { WebPlugin } from '@capacitor/core';
 export class AccountManagerWeb extends WebPlugin {
     accountPicker() {
-        return new Promise((resolve) => {
-            resolve({ "result": true });
-        });
+        throw new Error('Method not implemented.');
     }
     async getAccount() {
         throw new Error('Method not implemented.');

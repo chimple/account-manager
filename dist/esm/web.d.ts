@@ -1,9 +1,7 @@
 import { WebPlugin } from '@capacitor/core';
 import type { AccountManagerPlugin } from './definitions';
 export declare class AccountManagerWeb extends WebPlugin implements AccountManagerPlugin {
-    accountPicker(): Promise<{
-        result: any;
-    }>;
+    accountPicker(): Promise<{}>;
     getAccount(): Promise<{}>;
     getExistingAccountAuthToken(options: {
         account: any;

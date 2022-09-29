@@ -10,9 +10,7 @@ const AccountManager = core.registerPlugin('AccountManager', {
 
 class AccountManagerWeb extends core.WebPlugin {
     accountPicker() {
-        return new Promise((resolve) => {
-            resolve({ "result": true });
-        });
+        throw new Error('Method not implemented.');
     }
     async getAccount() {
         throw new Error('Method not implemented.');
