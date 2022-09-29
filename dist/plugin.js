@@ -7,7 +7,9 @@ var capacitorAccountManager = (function (exports, core) {
 
     class AccountManagerWeb extends core.WebPlugin {
         accountPicker() {
-            throw new Error('Method not implemented.');
+            return new Promise((resolve) => {
+                resolve({ "result": true });
+            });
         }
         async getAccount() {
             throw new Error('Method not implemented.');
