@@ -5,7 +5,7 @@ export interface AccountManagerPlugin {
         authTokenType: string;
     }): Promise<void>;
     getExistingAccountAuthToken(options: {
-        account: any;
+        userName: string;
         authTokenType: string;
     }): Promise<void>;
     showAccountPicker(): Promise<void>;
@@ -13,10 +13,7 @@ export interface AccountManagerPlugin {
         accountType: string;
         authTokenType: string;
     }): Promise<void>;
-    invalidateAuthToken(options: {
-        account: any;
-        authTokenType: string;
-    }): Promise<void>;
+    invalidateAuthToken(): Promise<void>;
     authenticator(options: {
         userName: string;
         AccountType: string;

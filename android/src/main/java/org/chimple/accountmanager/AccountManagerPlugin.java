@@ -16,10 +16,9 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
-import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
+import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -58,6 +57,7 @@ public class AccountManagerPlugin extends Plugin {
     ;
     private AlertDialog mAlertDialog;
     private boolean mInvalidate;
+    private OAuthCallbackListener authCallbackListener;
 
 
     @Override
@@ -111,10 +111,14 @@ public class AccountManagerPlugin extends Plugin {
 
         Intent resultData = result.getData();
         Bundle extras = resultData.getExtras();
-        Log.d(TAG, "authenticateAccountIntentResult: " + extras.getString("accountType") + "  " + extras.getString("authAccount"));
+        Log.d(TAG, "authenticateAccountIntentResult: " + resultData + "  " + resultData.getStringExtra(AccountManager.KEY_AUTHTOKEN) + "  " + extras.toString());
         String accountType = extras.getString("accountType");
         if (accountType.equals("com.google")) {
-            authenticator(call, extras.getString("authAccount"), accountType);
+            Account account = new Account(extras.getString("authAccount"), accountType);
+            Log.d("authToken account", account.toString());
+
+            authenticator(call, account);
+
         } else {
             Toast.makeText(getActivity(), "please choose Google Account to Authenticate", Toast.LENGTH_SHORT).show();
             call.reject("false");
@@ -189,7 +193,7 @@ public class AccountManagerPlugin extends Plugin {
     }
 
     @PluginMethod()
-    public void authenticator(PluginCall call, String userName, String AccountType) {
+    public void authenticator(PluginCall call, Account account) {
         PluginCall savedCall = getSavedCall();
 
         if (savedCall == null) {
@@ -198,26 +202,36 @@ public class AccountManagerPlugin extends Plugin {
 
         Log.d(TAG, "authenticator: Method called");
         try {
-            final AccountManagerFuture<Bundle> future = mAccountManager.confirmCredentials(new Account(userName, AccountType), null, getActivity(), new AccountManagerCallback<Bundle>() {
+            final AccountManagerFuture<Bundle> future = mAccountManager.confirmCredentials(account, null, getActivity(), new AccountManagerCallback<Bundle>() {
                 @Override
                 public void run(AccountManagerFuture<Bundle> future) {
                     try {
-                        Bundle bnd = future.getResult();
-                        Log.d("VSO", "Authenticator Bundle is " + future.isDone());
-                        if (bnd.getBoolean("booleanResult")) {
-                            Log.d("VSO", "Account Authentication Success");
-                            Toast.makeText(getActivity(), "Account Authentication Success", Toast.LENGTH_SHORT).show();
-                            JSObject ret = new JSObject();
-                            ret.put("result", true);
-                            call.success(ret);
-                        } else {
-                            Toast.makeText(getActivity(), "Account Authentication Failed", Toast.LENGTH_SHORT).show();
+                        synchronized (this) {
+                            Bundle result = invalidateAuthToken(account, "ah");
+                            Log.d(TAG, "run: before wait" + result);
+                            wait(2000);
+                            Log.d(TAG, "run: after wait" + result);
+                            final String authToken = result.getString(AccountManager.KEY_AUTHTOKEN);
+                            showMessage((authToken != null) ? "SUCCESS!\ntoken: " + authToken : "FAIL");
+                            Bundle bnd = future.getResult();
+                            Log.d("VSO", "Authenticator future is " + future);
+                            Log.d("VSO", "Authenticator Bundle is " + bnd + bnd.getBoolean(AccountManager.KEY_BOOLEAN_RESULT));
+                            if (bnd.getBoolean(AccountManager.KEY_BOOLEAN_RESULT) && authToken != null) {
+                                Log.d("VSO", "Account Authentication Success ");
+                                Toast.makeText(getActivity(), "Account Authentication Success", Toast.LENGTH_SHORT).show();
+                                Log.e(TAG, "run: result" + result);
+                                JSObject ret = new JSObject();
+                                ret.put("result", result);
+                                call.success(ret);
+                            } else {
+                                Toast.makeText(getActivity(), "Account Authentication Failed", Toast.LENGTH_SHORT).show();
 //                            JSObject ret = new JSObject();
 //                            ret.put("result", false);
 //                            call.success(ret);
-                            call.reject("false");
-                        }
+                                call.reject("false");
+                            }
 
+                        }
                     } catch (Exception e) {
                         e.printStackTrace();
                         showMessage(e.getMessage());
@@ -238,7 +252,7 @@ public class AccountManagerPlugin extends Plugin {
      * //     * @param authTokenType
      */
     @PluginMethod()
-    public void getExistingAccountAuthToken(PluginCall call) {
+    public void getExistingAccountAuthToken(PluginCall call, String userName, String accountType) {
         Log.d("VSO", "Entered getExistingAccountAuthToken()");
         //Requesting ACCOUNT_MANAGER permission
         if (getPermissionState("ACCOUNT_MANAGER") != PermissionState.GRANTED) {
@@ -248,21 +262,27 @@ public class AccountManagerPlugin extends Plugin {
         } else {
             System.out.println("getExistingAccountAuthToken() location permission already granted ");
         }
-
-        final AccountManagerFuture<Bundle> future = mAccountManager.getAuthToken(new Account("skandakumar97@gmail.com", "com.google"), ACCOUNT_TYPE, null, getActivity(), null, null);
-
-        new Thread(() -> {
-            try {
-                Bundle bnd = future.getResult();
-
-                final String authToken = bnd.getString(AccountManager.KEY_AUTHTOKEN);
-                showMessage((authToken != null) ? "SUCCESS!\ntoken: " + authToken : "FAIL");
-                Log.d("VSO", "GetToken Bundle is " + bnd);
-            } catch (Exception e) {
-                e.printStackTrace();
-                showMessage(e.getMessage());
-            }
-        }).start();
+        try {
+            Account account = new Account(userName, accountType);
+            String authToken = mAccountManager.peekAuthToken(account, AccountManager.KEY_AUTH_TOKEN_LABEL);
+//            getAuthToken(call, account);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+//        final AccountManagerFuture<Bundle> future = mAccountManager.getAuthToken(new Account(userName, accountType), ACCOUNT_TYPE, null, null, null, null);
+//
+//        new Thread(() -> {
+//            try {
+//                Bundle bnd = future.getResult();
+//
+//                final String authToken = bnd.getString(AccountManager.KEY_AUTHTOKEN);
+//                showMessage((authToken != null) ? "SUCCESS!\ntoken: " + authToken : "FAIL");
+//                Log.d("VSO", "GetToken Bundle is " + bnd);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//                showMessage(e.getMessage());
+//            }
+//        }).start();
     }
 
     @PermissionCallback
@@ -314,10 +334,10 @@ public class AccountManagerPlugin extends Plugin {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
 //                    if (invalidate)
-                    if (false)
-                        invalidateAuthToken(availableAccounts[which], "auth_token_type", call);
-                    else
-                        getExistingAccountAuthToken(call);
+//                    if (false)
+//                        invalidateAuthToken(availableAccounts[which], "auth_token_type", call);
+//                    else
+//                        getExistingAccountAuthToken(call);
 //                        getExistingAccountAuthToken(call, availableAccounts[which], "auth_token_type");
                 }
             }).create();
@@ -345,29 +365,88 @@ public class AccountManagerPlugin extends Plugin {
 //        }
 //    }
 
+//    @PluginMethod()
+//    public Bundle getAuthToken(PluginCall call, Account account) throws NetworkErrorException {
+//        Bundle authBundle = new Bundle();
+//        String authToken = mAccountManager.peekAuthToken(account, AUTH_TOKEN_TYPE_FULL_ACCESS);
+//        Log.d(TAG, "getAuthToken: authToken " + authToken);
+//        if (!TextUtils.isEmpty(authToken)) {
+//            authBundle.putString(AccountManager.KEY_ACCOUNT_NAME, account.name);
+//            authBundle.putString(AccountManager.KEY_ACCOUNT_TYPE, account.type);
+//            authBundle.putString(AccountManager.KEY_AUTHTOKEN, authToken);
+//            Log.d(TAG, "getAuthToken: authToken is not empty " + authBundle);
+//        } else {
+//            Log.d(TAG, "getAuthToken: result is null");
+////            Intent authIntent = new Intent();
+////            authIntent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response);
+////            authBundle.putParcelable(AccountManager.KEY_INTENT, authIntent);
+//        }
+//        return authBundle;
+//    }
+
+
     /**
      * Invalidates the auth token for the account
+     * <p>
+     * //     * @param account
+     * //     * @param authTokenType
      *
-     * @param account
-     * @param authTokenType
+     * @return
      */
 
-    @PluginMethod()
-    public void invalidateAuthToken(final Account account, String authTokenType, PluginCall call) {
-        final AccountManagerFuture<Bundle> future = mAccountManager.getAuthToken(account, authTokenType, null, null, null, null);
-
-        new Thread(() -> {
+    public Bundle invalidateAuthToken(final Account account, String authTokenType) {
+        final AccountManagerFuture<Bundle> future = mAccountManager.getAuthToken(account, authTokenType, null, getActivity(), null, null);
+        final Bundle[] bnd = new Bundle[1];
+        Thread thread = new Thread(() -> {
             try {
-                Bundle bnd = future.getResult();
-
-                final String authToken = bnd.getString(AccountManager.KEY_AUTHTOKEN);
-                mAccountManager.invalidateAuthToken(account.type, authToken);
-                showMessage(account.name + " invalidated");
+                bnd[0] = future.getResult();
+                Log.d(TAG, "invalidateAuthToken: bnd " + bnd[0]);
+//                return future.getResult();
+//                authToken = bnd.get().getString(AccountManager.KEY_AUTHTOKEN);
+//                showMessage((authToken != null) ? "SUCCESS!\ntoken: " + authToken : "FAIL");
+//                mAccountManager.invalidateAuthToken(account.type, authToken);
+//                showMessage(account.name + " invalidated");
             } catch (Exception e) {
                 e.printStackTrace();
                 showMessage(e.getMessage());
             }
-        }).start();
+        });
+
+        synchronized (this) {
+            thread.start();
+            try {
+                wait(2000);
+            } catch (Exception e) {
+                e.printStackTrace();
+                showMessage(e.getMessage());
+            }
+            Log.d(TAG, "invalidateAuthToken: bnd before return " + bnd[0]);
+            return bnd[0];
+        }
+    }
+
+    private static final String SCOPE = "oauth2:https://www.googleapis.com/auth/userinfo.profile";
+    private Activity act;
+
+    public void getAuthToken(Account account, final OAuthCallbackListener authCallbackListener) {
+        mAccountManager.getAuthToken(account, SCOPE, null, act,
+                new AccountManagerCallback<Bundle>() {
+                    public void run(AccountManagerFuture<Bundle> future) {
+                        try {
+                            String token = future.getResult().getString(AccountManager.KEY_AUTHTOKEN);
+                            authCallbackListener.callback(token);
+                        } catch (OperationCanceledException e) {
+                            authCallbackListener.callback(null);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, null);
+
+    }
+
+    public static interface OAuthCallbackListener {
+        public void callback(String authToken);
     }
 
     /**
@@ -380,8 +459,8 @@ public class AccountManagerPlugin extends Plugin {
      * @param authTokenType
      */
     @PluginMethod()
-    public void getTokenForAccountCreateIfNeeded(String accountType, String authTokenType, PluginCall call) {
-        final AccountManagerFuture<Bundle> future = mAccountManager.getAuthTokenByFeatures(accountType, authTokenType, null, null, null, null,
+    public void getTokenForAccountCreateIfNeeded(PluginCall call, String accountType, String authTokenType) {
+        final AccountManagerFuture<Bundle> future = mAccountManager.getAuthTokenByFeatures(accountType, authTokenType, null, getActivity(), null, null,
                 new AccountManagerCallback<Bundle>() {
                     @Override
                     public void run(AccountManagerFuture<Bundle> future) {

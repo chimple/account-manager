@@ -4,7 +4,7 @@ export declare class AccountManagerWeb extends WebPlugin implements AccountManag
     accountPicker(): Promise<{}>;
     getAccount(): Promise<{}>;
     getExistingAccountAuthToken(options: {
-        account: any;
+        userName: string;
         authTokenType: string;
     }): Promise<void>;
     showAccountPicker(): Promise<void>;
@@ -12,10 +12,7 @@ export declare class AccountManagerWeb extends WebPlugin implements AccountManag
         accountType: string;
         authTokenType: string;
     }): Promise<void>;
-    invalidateAuthToken(options: {
-        account: any;
-        authTokenType: string;
-    }): Promise<void>;
+    invalidateAuthToken(): Promise<void>;
     addNewAccount(options: {
         accountType: string;
         authTokenType: string;

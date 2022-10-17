@@ -24,8 +24,8 @@ class AccountManagerWeb extends core.WebPlugin {
     async getTokenForAccountCreateIfNeeded(options) {
         throw new Error('Method not implemented.' + options);
     }
-    async invalidateAuthToken(options) {
-        throw new Error('Method not implemented.' + options);
+    async invalidateAuthToken() {
+        throw new Error('Method not implemented.');
     }
     async addNewAccount(options) {
         throw new Error('Method not implemented.' + options);

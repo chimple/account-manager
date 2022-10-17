@@ -33,12 +33,12 @@
       },
       {
         "name": "getExistingAccountAuthToken",
-        "signature": "(options: { account: any; authTokenType: string; }) => Promise<void>",
+        "signature": "(options: { userName: string; authTokenType: string; }) => Promise<void>",
         "parameters": [
           {
             "name": "options",
             "docs": "",
-            "type": "{ account: any; authTokenType: string; }"
+            "type": "{ userName: string; authTokenType: string; }"
           }
         ],
         "returns": "Promise<void>",
@@ -75,14 +75,8 @@
       },
       {
         "name": "invalidateAuthToken",
-        "signature": "(options: { account: any; authTokenType: string; }) => Promise<void>",
-        "parameters": [
-          {
-            "name": "options",
-            "docs": "",
-            "type": "{ account: any; authTokenType: string; }"
-          }
-        ],
+        "signature": "() => Promise<void>",
+        "parameters": [],
         "returns": "Promise<void>",
         "tags": [],
         "docs": "",
