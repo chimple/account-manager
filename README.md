@@ -21,6 +21,7 @@ npx cap sync
 * [`invalidateAuthToken()`](#invalidateauthtoken)
 * [`authenticator(...)`](#authenticator)
 * [`accountPicker()`](#accountpicker)
+* [Interfaces](#interfaces)
 
 </docgen-index>
 
@@ -111,11 +112,25 @@ authenticator(options: { userName: string; AccountType: string; }) => Promise<vo
 ### accountPicker()
 
 ```typescript
-accountPicker() => Promise<{}>
+accountPicker() => Promise<authData>
 ```
 
-**Returns:** <code>Promise&lt;{}&gt;</code>
+**Returns:** <code>Promise&lt;<a href="#authdata">authData</a>&gt;</code>
 
 --------------------
+
+
+### Interfaces
+
+
+#### authData
+
+| Prop              | Type                |
+| ----------------- | ------------------- |
+| **`authAccount`** | <code>string</code> |
+| **`sourcedId`**   | <code>string</code> |
+| **`endpointUrl`** | <code>string</code> |
+| **`addedType`**   | <code>string</code> |
+| **`authToken`**   | <code>string</code> |
 
 </docgen-api>

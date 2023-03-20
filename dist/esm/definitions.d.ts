@@ -18,5 +18,12 @@ export interface AccountManagerPlugin {
         userName: string;
         AccountType: string;
     }): Promise<void>;
-    accountPicker(): Promise<{}>;
+    accountPicker(): Promise<authData>;
+}
+export interface authData {
+    authAccount: string;
+    sourcedId: string;
+    endpointUrl: string;
+    addedType: string;
+    authToken: string;
 }

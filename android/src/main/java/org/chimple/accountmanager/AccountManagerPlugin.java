@@ -100,22 +100,31 @@ public class AccountManagerPlugin extends Plugin {
         Log.d(TAG, "getUstadIntentResult: result.getResultCode() " + result.getResultCode());
 
         Bundle extras = resultData.getExtras();
-        Log.d(TAG, "getUstadIntentResult: Bundle extras " + extras.getString(AccountManager.KEY_ACCOUNT_NAME) + "   "
-                + AccountManager.KEY_ACCOUNT_TYPE + "   " + extras.getString(AccountManager.KEY_AUTHTOKEN));
+        Log.d(TAG, "getUstadIntentResult: Bundle extras1 " + extras.getString(AccountManager.KEY_ACCOUNT_NAME) + "   "
+                + AccountManager.KEY_ACCOUNT_TYPE + "   " + extras.getString(AccountManager.KEY_AUTHTOKEN)+" accountName"+extras.getString("accountName"));
+        Log.d("Extras",extras.toString());
 
         int resultCode = result.getResultCode();
-        String addedName = extras.getString(AccountManager.KEY_ACCOUNT_NAME);
+        String authAccount = extras.getString(AccountManager.KEY_ACCOUNT_NAME);
+        String sourcedId = extras.getString("sourcedId");
+        String endpointUrl = extras.getString("endpointUrl");
         String addedType = extras.getString(AccountManager.KEY_ACCOUNT_TYPE);
         String authToken = extras.getString(AccountManager.KEY_AUTHTOKEN);
 
-        if (addedName != null && addedType != null && authToken != null) {
+
+        if (authAccount != null && addedType != null && authToken != null) {
             Log.d("VSO", "getToken Success ");
             Toast.makeText(getActivity(), "GetToken Success " + authToken,
                     Toast.LENGTH_SHORT).show();
-            Log.e(TAG, "run: result" + "   " + resultCode + "   " + addedName + "   " + addedType + "   " + authToken);
+            Log.e(TAG, "run: result" + "   " + resultCode + "   " + authAccount + "   " + addedType + "   " + authToken);
             JSObject ret = new JSObject();
-            ret.put("result", resultCode + "," + addedName + "," + addedType + "," + authToken);
-            call.success(ret);
+//            ret.put("result", resultCode + "," + authAccount + "," + addedType + "," + authToken+","+sourcedId);
+            ret.put("authAccount",authAccount);
+            ret.put("sourcedId",sourcedId);
+            ret.put("endpointUrl",endpointUrl);
+            ret.put("addedType",addedType);
+            ret.put("authToken",authToken);
+            call.resolve(ret);
         } else {
             Toast.makeText(getActivity(), "getToken Failed",
                     Toast.LENGTH_SHORT).show();

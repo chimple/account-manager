@@ -101,18 +101,65 @@
       },
       {
         "name": "accountPicker",
-        "signature": "() => Promise<{}>",
+        "signature": "() => Promise<authData>",
         "parameters": [],
-        "returns": "Promise<{}>",
+        "returns": "Promise<authData>",
         "tags": [],
         "docs": "",
-        "complexTypes": [],
+        "complexTypes": [
+          "authData"
+        ],
         "slug": "accountpicker"
       }
     ],
     "properties": []
   },
-  "interfaces": [],
+  "interfaces": [
+    {
+      "name": "authData",
+      "slug": "authdata",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "authAccount",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "sourcedId",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "endpointUrl",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "addedType",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "authToken",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string"
+        }
+      ]
+    }
+  ],
   "enums": [],
   "typeAliases": [],
   "pluginConfigs": []
